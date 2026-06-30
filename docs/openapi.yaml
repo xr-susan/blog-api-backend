@@ -1,0 +1,123 @@
+openapi: 3.1.0
+info:
+  title: Blog API Backend
+  version: 1.0.0
+  description: A compact REST API for publishing posts and moderating comments.
+servers:
+  - url: http://localhost:3000
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      security: []
+      summary: Check service health
+      responses:
+        "200":
+          description: Service is running
+  /v1/posts:
+    get:
+      security: []
+      summary: List published posts
+      description: Draft and archived filters require a bearer token.
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, archived]
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Paginated posts
+    post:
+      summary: Create a post
+      responses:
+        "201":
+          description: Post created
+        "401":
+          description: Missing or invalid token
+  /v1/posts/{slug}:
+    get:
+      security: []
+      summary: Read a post
+      description: Draft and archived posts require a bearer token.
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      responses:
+        "200":
+          description: Post found
+        "404":
+          description: Post not found
+    patch:
+      summary: Update a post
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      responses:
+        "200":
+          description: Post updated
+    delete:
+      summary: Delete a post and its comments
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      responses:
+        "204":
+          description: Post deleted
+  /v1/posts/{slug}/comments:
+    get:
+      security: []
+      summary: List approved comments
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      responses:
+        "200":
+          description: Comments for the post
+    post:
+      security: []
+      summary: Add a pending comment
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      responses:
+        "201":
+          description: Comment submitted for moderation
+  /v1/comments/{id}/moderation:
+    patch:
+      summary: Moderate a comment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Comment moderated
+components:
+  parameters:
+    Slug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
