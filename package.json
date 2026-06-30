@@ -1,13 +1,16 @@
 {
   "name": "blog-api-backend",
   "version": "1.0.0",
-  "description": "A small, production-minded Blog API built with Node.js and zero runtime dependencies.",
+  "description": "A small, production-minded Blog API with JSON, SQLite, and PostgreSQL storage options.",
   "type": "module",
   "main": "src/server.js",
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "test": "node --test"
+  },
+  "optionalDependencies": {
+    "pg": "^8.13.1"
   },
   "keywords": [
     "blog",
@@ -19,6 +22,6 @@
   "author": "xr-susan",
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   }
 }

@@ -15,6 +15,28 @@ paths:
       responses:
         "200":
           description: Service is running
+  /v1/auth/login:
+    post:
+      security: []
+      summary: Sign in as the admin user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Bearer token issued
+        "401":
+          description: Invalid credentials
   /v1/posts:
     get:
       security: []

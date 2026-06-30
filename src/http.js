@@ -43,17 +43,13 @@ export function sendText(res, status, body, contentType = "text/plain; charset=u
   res.end(body);
 }
 
-export function requireAdmin(req, adminToken) {
-  if (!adminToken) {
-    throw new HttpError(503, "Admin token is not configured.");
-  }
-
+export function readBearerToken(req) {
   const header = req.headers.authorization || "";
-  const token = header.startsWith("Bearer ") ? header.slice(7) : "";
+  return header.startsWith("Bearer ") ? header.slice(7) : "";
+}
 
-  if (token !== adminToken) {
-    throw new HttpError(401, "Use a valid Bearer token to access this endpoint.");
-  }
+export function requireAdmin(req, auth) {
+  auth.requireAdmin(readBearerToken(req));
 }
 
 export function routeKey(method, pathname) {

@@ -12,9 +12,14 @@ describe("Blog API", () => {
 
   before(async () => {
     tempDir = await mkdtemp(join(tmpdir(), "blog-api-"));
-    server = createApp({
+    server = await createApp({
       port: 0,
+      storage: "json",
       adminToken: "test-token",
+      authSecret: "test-secret",
+      adminEmail: "admin@example.com",
+      adminPassword: "secret-password",
+      logLevel: "silent",
       dataFile: join(tempDir, "blog.json")
     });
 
@@ -91,6 +96,31 @@ describe("Blog API", () => {
     assert.equal(response.status, 401);
   });
 
+  it("issues a short-lived admin token after login", async () => {
+    const login = await request("/v1/auth/login", {
+      method: "POST",
+      body: {
+        email: "admin@example.com",
+        password: "secret-password"
+      }
+    });
+
+    assert.equal(login.status, 200);
+    assert.match(login.body.data.token, /^[^.]+\.[^.]+\.[^.]+$/);
+
+    const created = await request("/v1/posts", {
+      method: "POST",
+      token: login.body.data.token,
+      body: {
+        title: "JWT Protected Post",
+        content: "Created with a login-issued bearer token.",
+        status: "published"
+      }
+    });
+
+    assert.equal(created.status, 201);
+  });
+
   it("keeps drafts private unless an admin token is provided", async () => {
     await request("/v1/posts", {
       method: "POST",
@@ -118,7 +148,7 @@ describe("Blog API", () => {
     };
 
     if (options.token) {
-      headers.authorization = "Bearer test-token";
+      headers.authorization = `Bearer ${options.token === true ? "test-token" : options.token}`;
     }
 
     const response = await fetch(`${baseUrl}${path}`, {
