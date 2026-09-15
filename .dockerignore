@@ -1,0 +1,30 @@
+# Dependencies (installed inside the image from package.json)
+node_modules
+
+# Version control and CI configuration
+.git
+.gitignore
+.github
+
+# Tests are not needed at runtime
+test
+
+# Local environment files.
+# The Dockerfile never copies .env.example, and deploy/docker-compose.yml
+# supplies configuration through the container environment instead.
+.env
+.env.*
+
+# Logs and local data
+*.log
+data
+
+# Editor and OS noise
+.vscode
+.idea
+*.swp
+.DS_Store
+
+# NOTE: docs/ is intentionally NOT ignored. The Dockerfile runs
+# `COPY docs ./docs` and src/app.js reads docs/openapi.yaml at runtime to
+# serve GET /openapi.yaml, so excluding it would break the image build.
