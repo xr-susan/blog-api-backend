@@ -1,5 +1,9 @@
 # Blog API Backend
 
+[![CI](https://github.com/xr-susan/blog-api-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/xr-susan/blog-api-backend/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D24-339933.svg)](https://nodejs.org/)
+
 A small REST API for posts and comments, built with modern Node.js. It is intentionally easy to read, run, test, and extend.
 
 ## What it does
@@ -101,6 +105,40 @@ curl -X PATCH http://localhost:3000/v1/comments/<comment-id>/moderation \
 | `GET` | `/v1/posts/:slug/comments` | List approved comments |
 | `POST` | `/v1/posts/:slug/comments` | Submit a pending comment |
 | `PATCH` | `/v1/comments/:id/moderation` | Approve or reject a comment |
+
+## Storage backends
+
+Pick a backend with the `BLOG_STORAGE` environment variable (`json`, `sqlite`, or `postgres`). SQLite is the default.
+
+| Backend | Persistence | Best use case | Extra dependency |
+| --- | --- | --- | --- |
+| JSON | A single JSON file (`BLOG_DATA_FILE`, default `./data/blog.json`) | Local demos, tiny datasets, and reading the raw state by hand | None — Node built-ins only |
+| SQLite | A single SQLite file (`BLOG_SQLITE_FILE`, default `./data/blog.sqlite`) | Default for local work and single-node deployments | None — uses Node's built-in `node:sqlite` module |
+| PostgreSQL | An external database server (`DATABASE_URL`) | Hosted or multi-instance deployments | `pg`, listed under `optionalDependencies` |
+
+PostgreSQL storage is the only backend with an external package, and it is imported lazily, so the JSON and SQLite paths install nothing extra.
+
+## Project layout
+
+```text
+src/
+├── server.js              Entry point: loads config and starts the HTTP server
+├── app.js                 Routing and request handling
+├── config.js              Environment-driven configuration
+├── http.js                JSON/text helpers, HttpError, bearer-token guard
+├── auth.js                Admin login and HMAC-signed JWT issue/verify
+├── logger.js              Compact one-line JSON request logs
+├── validation.js          Field validation, slugify, status parsing
+├── store.js               Picks a storage driver from config
+└── stores/
+    ├── json-store.js      JSON file store
+    ├── sqlite-store.js    SQLite store (node:sqlite)
+    └── postgres-store.js  PostgreSQL store (pg)
+```
+
+## Implementation notes
+
+This codebase is plain **JavaScript**, not TypeScript: every file under `src/` and `test/` is `.js`, the package is ESM (`"type": "module"` in `package.json`), and there is no `tsconfig.json` or TypeScript dependency. Tests use Node's built-in test runner (`node --test`, exposed as `npm test`), so there is no test framework to install either. The only runtime dependency is the optional `pg` package used by the PostgreSQL store.
 
 ## Design notes
 
